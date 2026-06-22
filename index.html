@@ -107,6 +107,30 @@
   .foot .rg{background:rgba(39,224,122,.08);border:1px solid rgba(39,224,122,.3);border-radius:12px;padding:10px 12px;color:#bff0d2;margin-bottom:12px}
   .foot a{color:var(--blue);text-decoration:none}
   .corr{background:rgba(255,210,74,.08);border:1px solid rgba(255,210,74,.35);border-radius:12px;padding:10px 12px;font-size:12px;color:#ffe9a8;margin:14px 0;line-height:1.5}
+
+  /* STORY MODE BUTTON (top right) */
+  .storybtn{position:absolute;top:14px;right:14px;z-index:5;background:rgba(255,255,255,.08);border:1px solid var(--line);
+    color:var(--txt);font-size:11px;font-weight:700;border-radius:999px;padding:6px 11px;cursor:pointer;backdrop-filter:blur(4px)}
+
+  /* ACTION BAR (sticky bottom) */
+  .actionbar{position:sticky;bottom:0;display:flex;gap:10px;padding:12px 0 4px;margin-top:10px;
+    background:linear-gradient(180deg,transparent,var(--bg) 40%)}
+  .actionbar button{flex:1;border:0;border-radius:14px;font-weight:800;font-size:14px;padding:14px 8px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .12s,box-shadow .2s}
+  .actionbar button:active{transform:scale(.97)}
+  .btn-copy{background:linear-gradient(135deg,#1d2a4d,#28365e);color:var(--txt);border:1px solid var(--line)!important}
+  .btn-share{background:linear-gradient(135deg,#27e07a,#13b95f);color:#06210f;box-shadow:0 8px 22px rgba(39,224,122,.32)}
+  .toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%) translateY(20px);background:#0c1430;border:1px solid var(--green);
+    color:var(--green);font-size:13px;font-weight:700;padding:10px 16px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s;z-index:20}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* STORY MODE: clean 9:16 framing for screenshots */
+  body.story{padding:0;background:#06080f}
+  body.story .wrap{max-width:420px;aspect-ratio:9/16;overflow-y:auto;padding:14px;border-radius:0;
+    scrollbar-width:none;box-shadow:0 0 0 100vmax #06080f}
+  body.story .wrap::-webkit-scrollbar{display:none}
+  body.story .toggle,body.story .hint,body.story .actionbar,body.story .more{display:none!important}
+  body.story .angles{display:block!important}
 </style>
 </head>
 <body>
@@ -114,10 +138,11 @@
 
   <!-- HERO -->
   <div class="hero">
+    <button class="storybtn" id="storyBtn">📐 Story mode</button>
     <span class="badge">🎰 2026 WORLD CUP • GROUP STAGE</span>
     <h1>BRIAN'S<br>BETSMAXX BRIEFING</h1>
     <p>Three matches · researched odds · zero fluff</p>
-    <span class="live"><span class="dot"></span> Odds snapshot · 22 June 2026</span>
+    <span class="live"><span class="dot"></span> Latest lines · refreshed 22 June 2026</span>
   </div>
 
   <!-- CORRECTION -->
@@ -145,8 +170,8 @@
       <span style="font-size:18px;font-weight:800">£</span>
       <input id="stake" type="number" value="10" min="1" inputmode="decimal" />
     </div>
-    <div class="payout" id="payout">£31.60<small>returns if all 3 land</small></div>
-    <div class="multi" id="multi">combined odds × 3.16</div>
+    <div class="payout" id="payout">£27.01<small>returns if all 3 land</small></div>
+    <div class="multi" id="multi">combined odds × 2.70</div>
     <div style="font-size:11px;color:var(--mut);margin-top:10px">One upset kills the whole slip — that's where the bookie's edge feasts 🦈</div>
   </div>
 
@@ -171,6 +196,12 @@
     </div>
   </div>
 
+  <!-- ACTION BAR -->
+  <div class="actionbar">
+    <button class="btn-copy" id="copyBtn">📋 Copy bet slip</button>
+    <button class="btn-share" id="shareBtn">📲 Share</button>
+  </div>
+
   <!-- FOOTER -->
   <div class="foot">
     <div class="rg">💚 Bet for fun. Set a limit before you start &amp; never chase losses. 18+ · BeGambleAware</div>
@@ -179,31 +210,32 @@
   </div>
 
 </div>
+<div class="toast" id="toast">Copied! ✅</div>
 
 <script>
   // ---- DATA ----
   const matches = [
     {
-      id:'fra', date:'Mon 22 Jun · Philadelphia', stars:5, rating:'🟢 BANKER',
+      id:'fra', date:'Mon 22 Jun · Philadelphia · TODAY', stars:5, rating:'🟢 BANKER',
       home:{flag:'🇫🇷',name:'France'}, away:{flag:'🇮🇶',name:'Iraq'},
       rows:[
-        {who:'France', cls:'win',  dec:'1.14', am:'-700',  pct:88},
-        {who:'Draw',   cls:'draw', dec:'12.0', am:'+1100', pct:8},
+        {who:'France', cls:'win',  dec:'1.07', am:'-1500', pct:94},
+        {who:'Draw',   cls:'draw', dec:'13.0', am:'+1200', pct:7},
         {who:'Iraq',   cls:'lose', dec:'34.0', am:'+3300', pct:3}
       ],
-      angles:['France −2.5 handicap','Over 3.5 goals','France clean sheet'],
-      note:'France beat Senegal 3-1. Iraq lost 4-1 to Norway &amp; sit bottom on 0 pts. Consensus score: France 3-0 / 3-1. About as one-sided as the World Cup gets.'
+      angles:['France −2.5 handicap','Over 3.5 goals','France clean sheet','Mbappé anytime scorer'],
+      note:'France beat Senegal 3-1 (Mbappé 2). Iraq lost 4-1 to Norway &amp; sit bottom on 0 pts. A supercomputer gives France a 90% win chance — the line has shortened from -700 to -1500. Consensus score: France 3-0.'
     },
     {
       id:'ger', date:'Thu 25 Jun · MetLife, NJ', stars:3, rating:'🟡 LIKELY',
       home:{flag:'🇩🇪',name:'Germany'}, away:{flag:'🇪🇨',name:'Ecuador'},
       rows:[
-        {who:'Germany', cls:'win',  dec:'1.68', am:'-147', pct:60},
-        {who:'Draw',    cls:'draw', dec:'4.00', am:'+300', pct:25},
-        {who:'Ecuador', cls:'lose', dec:'3.75', am:'+275', pct:27}
+        {who:'Germany', cls:'win',  dec:'1.53', am:'-190', pct:65},
+        {who:'Draw',    cls:'draw', dec:'3.80', am:'+280', pct:26},
+        {who:'Ecuador', cls:'lose', dec:'5.50', am:'+450', pct:18}
       ],
-      angles:['Over 2.5 goals','Germany clean sheet','Germany +100 (value)'],
-      note:'Germany are 2-from-2 with a +7 goal difference (8 scored!). Ecuador haven\'t scored &amp; must win to survive. Consensus score: Germany 2-0.'
+      angles:['Over 2.5 goals','Germany clean sheet','Germany −0.5 handicap'],
+      note:'Germany are 2-from-2 with a +7 goal difference (8 scored!). Ecuador haven\'t scored &amp; must win to survive. Germany have firmed to -190. Consensus score: Germany 2-0.'
     },
     {
       id:'esp', date:'Group H decider · Guadalajara', stars:4, rating:'🟡 CLASS',
@@ -278,7 +310,7 @@
   });
 
   // accumulator calc
-  const ACCA = 1.14 * 1.68 * 1.65; // 3.158
+  const ACCA = 1.07 * 1.53 * 1.65; // 2.70
   const stake = document.getElementById('stake');
   const payout = document.getElementById('payout');
   const multi = document.getElementById('multi');
@@ -299,6 +331,57 @@
 
   render();
   calc();
+
+  // ---- SHARE / COPY ----
+  function betSlip(){
+    const fav = matches.map(m=>{
+      const w = m.rows[0];
+      return `${m.home.flag} ${m.home.name} to beat ${m.away.name} ${m.away.flag}  @ ${w.dec} (${w.pct}%)`;
+    }).join('\n');
+    const s = parseFloat(stake.value)||10;
+    return `🎰 BRIAN'S BETSMAXX TREBLE — 2026 World Cup\n\n${fav}\n\n🎟️ £${s} treble @ ${ACCA.toFixed(2)} → returns £${(s*ACCA).toFixed(2)} if all 3 land\n\n⚠️ For fun only · 18+ · gamble responsibly`;
+  }
+
+  const toast = document.getElementById('toast');
+  let toastT;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(()=>toast.classList.remove('show'), 1800);
+  }
+  function copyText(t){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(t);
+    }
+    const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');}catch(e){} document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+
+  document.getElementById('copyBtn').addEventListener('click', ()=>{
+    copyText(betSlip()).then(()=>showToast('Bet slip copied! ✅'));
+  });
+
+  document.getElementById('shareBtn').addEventListener('click', async ()=>{
+    const data = {title:"Brian's BetsMaxx Briefing", text:betSlip(), url:location.href};
+    if(navigator.share){
+      try{ await navigator.share(data); }catch(e){ /* user cancelled */ }
+    }else{
+      copyText(betSlip()+'\n'+location.href).then(()=>showToast('Copied — paste it anywhere! ✅'));
+    }
+  });
+
+  // ---- STORY MODE ----
+  const storyBtn = document.getElementById('storyBtn');
+  storyBtn.addEventListener('click', ()=>{
+    const on = document.body.classList.toggle('story');
+    storyBtn.textContent = on ? '✕ Exit story' : '📐 Story mode';
+    if(on){
+      document.getElementById('aiBody').classList.remove('open'); // keep it tidy for the grab
+      document.getElementById('aiArrow').classList.remove('up');
+      window.scrollTo(0,0);
+    }
+  });
 </script>
 </body>
 </html>
