@@ -1,0 +1,30 @@
+{
+  "updated": "2026-06-23T12:00:00Z",
+  "source": "manual snapshot (pre-automation) — auto-refreshed once the Action runs",
+  "matches": {
+    "fra": {
+      "rows": [
+        { "who": "France", "cls": "win", "dec": "1.07", "am": "-1500", "pct": 94 },
+        { "who": "Draw", "cls": "draw", "dec": "13.0", "am": "+1200", "pct": 7 },
+        { "who": "Iraq", "cls": "lose", "dec": "34.0", "am": "+3300", "pct": 3 }
+      ],
+      "fav": 1.07
+    },
+    "ger": {
+      "rows": [
+        { "who": "Germany", "cls": "win", "dec": "1.53", "am": "-190", "pct": 65 },
+        { "who": "Draw", "cls": "draw", "dec": "3.80", "am": "+280", "pct": 26 },
+        { "who": "Ecuador", "cls": "lose", "dec": "5.50", "am": "+450", "pct": 18 }
+      ],
+      "fav": 1.53
+    },
+    "esp": {
+      "rows": [
+        { "who": "Spain", "cls": "win", "dec": "1.65", "am": "-155", "pct": 61 },
+        { "who": "Draw", "cls": "draw", "dec": "3.70", "am": "+270", "pct": 27 },
+        { "who": "Uruguay", "cls": "lose", "dec": "6.00", "am": "+500", "pct": 17 }
+      ],
+      "fav": 1.65
+    }
+  }
+}

@@ -142,7 +142,7 @@
     <span class="badge">🎰 2026 WORLD CUP • GROUP STAGE</span>
     <h1>BRIAN'S<br>BETSMAXX BRIEFING</h1>
     <p>Three matches · researched odds · zero fluff</p>
-    <span class="live"><span class="dot"></span> Latest lines · refreshed 22 June 2026</span>
+    <span class="live"><span class="dot"></span> <span id="liveLabel">Latest lines · refreshed 22 June 2026</span></span>
   </div>
 
   <!-- CORRECTION -->
@@ -310,7 +310,7 @@
   });
 
   // accumulator calc
-  const ACCA = 1.07 * 1.53 * 1.65; // 2.70
+  let ACCA = 1.07 * 1.53 * 1.65; // 2.70 (overridden by live odds.json if present)
   const stake = document.getElementById('stake');
   const payout = document.getElementById('payout');
   const multi = document.getElementById('multi');
@@ -329,14 +329,34 @@
     document.getElementById('aiArrow').classList.toggle('up');
   });
 
-  render();
-  calc();
+  // ---- LIVE ODDS (odds.json, written by the GitHub Action) ----
+  async function loadLiveOdds(){
+    try{
+      const res = await fetch('odds.json', {cache:'no-store'});
+      if(!res.ok) return;
+      const data = await res.json();
+      if(!data || !data.matches) return;
+      matches.forEach(m=>{
+        const d = data.matches[m.id];
+        if(d && Array.isArray(d.rows) && d.rows.length>=2) m.rows = d.rows;
+      });
+      ACCA = matches.reduce((p,m)=> p * (parseFloat(m.rows[0].dec)||1), 1);
+      const lbl = document.getElementById('liveLabel');
+      const t = data.updated ? new Date(data.updated) : null;
+      if(lbl && t && !isNaN(t)){
+        lbl.textContent = 'Updated ' + t.toLocaleString(undefined,{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+      }
+    }catch(e){ /* offline / opened via file:// — keep the baked-in odds */ }
+  }
+
+  // Load live odds first (if available), then render with whatever we have.
+  loadLiveOdds().finally(()=>{ render(); calc(); });
 
   // ---- SHARE / COPY ----
   function betSlip(){
     const fav = matches.map(m=>{
       const w = m.rows[0];
-      return `${m.home.flag} ${m.home.name} to beat ${m.away.name} ${m.away.flag}  @ ${w.dec} (${w.pct}%)`;
+      return `${m.home.flag}${m.away.flag} ${w.who} to win @ ${w.dec} (${w.pct}%)`;
     }).join('\n');
     const s = parseFloat(stake.value)||10;
     return `🎰 BRIAN'S BETSMAXX TREBLE — 2026 World Cup\n\n${fav}\n\n🎟️ £${s} treble @ ${ACCA.toFixed(2)} → returns £${(s*ACCA).toFixed(2)} if all 3 land\n\n⚠️ For fun only · 18+ · gamble responsibly`;
