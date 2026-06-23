@@ -1,0 +1,49 @@
+name: Refresh World Cup odds
+
+# Pulls live odds from The Odds API into odds.json, which the card reads.
+# NOTE: scheduled (cron) runs only fire from the DEFAULT branch (main),
+# so this becomes active once the PR is merged. You can also trigger it
+# manually any time via "Run workflow" (workflow_dispatch).
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 6,18 * * *'        # twice-daily baseline refresh (UTC)
+    - cron: '0 12,16,19 25 6 *'   # Jun 25: hours before Germany v Ecuador (20:00 UTC KO)
+    - cron: '0 16,20,23 26 6 *'   # Jun 26: hours before Spain v Uruguay (00:00 UTC Jun 27 KO)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-odds
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch latest odds
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          ODDS_SPORT_KEY: ${{ vars.ODDS_SPORT_KEY }}
+          ODDS_REGIONS: ${{ vars.ODDS_REGIONS }}
+        run: node scripts/fetch-odds.js
+
+      - name: Commit odds.json if it changed
+        run: |
+          git config user.name "betsmaxx-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add odds.json
+          if git diff --staged --quiet; then
+            echo "No odds changes — nothing to commit."
+          else
+            git commit -m "chore: refresh World Cup odds [skip ci]"
+            git push
+          fi
